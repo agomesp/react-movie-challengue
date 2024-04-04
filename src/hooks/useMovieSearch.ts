@@ -8,14 +8,22 @@ export function useMovieSearch() {
     const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(true);
     const setMovies = useMovieStore((state) => state.setMovies);
     const setResults = useMovieStore((state) => state.setResults);
-    const [search, setSearch] = useState('');
+    const setSearch = useMovieStore((state) => state.setSearch);
+    const search = useMovieStore((state) => state.search);
+
+    const currentPage = useMovieStore((state) => state.currentPage);
+    const totalPages = useMovieStore((state) => state.totalPages);
+    const setTotalPages = useMovieStore((state) => state.setTotalPages);
+    const setCurrentPage = useMovieStore((state) => state.setCurrentPage);
+
     const [loading, setLoading] = useState<boolean>(false);
     const debouncedSearch = useDebounce(search);
-    const {data} = useFetchMovies(debouncedSearch);
+    const {data} = useFetchMovies(debouncedSearch, currentPage);
 
     const handleChange = (): void => {
         const movieTitle: string = inputRef.current?.value || '';
         setLoading(true);
+        setCurrentPage(1);
 
         if (movieTitle.length >= 3) {
             setSearch(movieTitle);
@@ -24,6 +32,19 @@ export function useMovieSearch() {
             setIsButtonDisabled(true);
             setLoading(false);
             setResults(0);
+            setTotalPages(1);
+        }
+    }
+    const handlePageChange = (action: string) => {
+        if (currentPage === 1 && action === "previous") return;
+        if (currentPage === totalPages && action === "next") return;
+
+        setLoading(true);
+
+        if (action === "next") {
+            setCurrentPage(currentPage + 1);
+        } else {
+            setCurrentPage(currentPage - 1);
         }
     }
 
@@ -32,11 +53,13 @@ export function useMovieSearch() {
             setMovies(data.Search)
             setLoading(false);
             setResults(parseInt(data.totalResults));
+            setTotalPages(Math.ceil(parseInt(data.totalResults) / 10));
         }
 
         if (data?.Response === "False") {
             setLoading(false);
             setResults(-1);
+            setTotalPages(1);
         }
     }, [data]);
 
@@ -44,6 +67,7 @@ export function useMovieSearch() {
         inputRef,
         isButtonDisabled,
         loading,
-        handleChange
+        handleChange,
+        handlePageChange
     };
 }

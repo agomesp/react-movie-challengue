@@ -1,13 +1,17 @@
+import './styles/Pagination.css'
+
 type PaginationProps = {
     currentPage: number;
     totalPages: number;
+    handlePageChange: (action: string) => void;
 }
-const Pagination = ({currentPage = 1, totalPages = 1}: PaginationProps) => {
+const Pagination = ({currentPage = 1, totalPages = 1, handlePageChange}: PaginationProps) => {
+
     return (
-        <div>
-            <button>Previous</button>
+        <div className="pagination-container">
+            <button onClick={() => handlePageChange("previous")} disabled={currentPage === 1}>Previous</button>
             <span>Page {currentPage} of {totalPages}</span>
-            <button>Next</button>
+            <button onClick={() => handlePageChange("next")} disabled={currentPage === totalPages}>Next</button>
         </div>
     );
 };
